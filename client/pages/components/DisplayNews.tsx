@@ -3,7 +3,7 @@ import { News } from "..";
 
 const DisplayNews = ({ news, index }: { news: News; index: number }) => {
   return (
-    <div className="bg-violet-300 p-2 gap-2 flex text-black">
+    <div className="bg-violet-100 p-2 gap-2 flex text-black">
       <span>{index + 1}.</span>
       <div className="gap-2">
         <h3 className="font-bold">

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { Observable } from 'rxjs';
+import { Observable, lastValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { News, NewsDocument } from './models/News.model';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class NewsService {
@@ -22,17 +23,34 @@ export class NewsService {
 
   async saveStories(stories: any[]): Promise<void> {
     for (const story of stories) {
-      const newsStory = new this.newsModel({
-        title: story.title,
-        url: story.url,
-        author: story.author,
-        created_at: story.created_at,
-      });
-      await newsStory.save();
+      const existingStory = await this.newsModel
+        .findOne({ url: story.url })
+        .exec();
+
+      if (!existingStory) {
+        const newsStory = new this.newsModel({
+          title: story.title,
+          url: story.url,
+          author: story.author,
+          created_at: story.created_at,
+        });
+        await newsStory.save();
+      }
     }
   }
 
   async findAll(): Promise<NewsDocument[]> {
     return await this.newsModel.find().exec();
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async handleCron() {
+    try {
+      const stories = await lastValueFrom(this.fetchStories());
+
+      await this.saveStories(stories);
+    } catch (error) {
+      console.error('Error in scheduled task:', error);
+    }
   }
 }

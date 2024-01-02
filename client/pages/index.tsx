@@ -20,16 +20,22 @@ const NewsComponent = () => {
     );
 
   return (
-    <div className="px-6 py-12 lg:px-8">
+    <div className="py-12 px-6 lg:px-8 w-full">
       <div className="bg-violet-600 flex p-2 items-center justify-between">
         <h1 className="font-bold">Hacker News</h1>
         <h4>Login</h4>
       </div>
-      {data.hits.map((news: News, index: number) => (
-        <div key={index}>
-          <DisplayNews index={index} news={news} />
+      {data ? (
+        data?.map((news: News, index: number) => (
+          <div key={index}>
+            <DisplayNews index={index} news={news} />
+          </div>
+        ))
+      ) : (
+        <div className="h-screen flex items-center justify-center">
+          Hacker news is not available at the moment.
         </div>
-      ))}
+      )}
     </div>
   );
 };
